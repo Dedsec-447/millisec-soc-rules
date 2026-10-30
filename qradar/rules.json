@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "author": "MilliSec SOC",
+  "platform": "IBM QRadar 7.3.3+",
+  "rules": [
+    {
+      "id": 1, "name": "MilliSec-001: New User Account Created",
+      "mitre": "T1136.002", "severity": 6, "enabled": true,
+      "logic": "when the event(s) were detected by a Local/Remote collector and the event category for the event is 'User Account Management' and the event QID is '4720: A user account was created' and when the event matches this AQL query: SELECT QIDNAME(qid) as 'Event', username, sourceip from events where QIDNAME(qid) ilike '%created%' LAST 5 MINUTES",
+      "response": "Dispatch Offense, annotate with MITRE T1136.002"
+    },
+    {
+      "id": 2, "name": "MilliSec-002: User Added to Privileged Group",
+      "mitre": "T1098.007", "severity": 7, "enabled": true,
+      "logic": "when the event(s) were detected by a Local/Remote collector and the event QID is one of the following: '4728: A member was added to a security-enabled global group', '4732: A member was added to a security-enabled local group', '4756: A member was added to a security-enabled universal group'",
+      "response": "Dispatch Offense, annotate with MITRE T1098.007"
+    },
+    {
+      "id": 3, "name": "MilliSec-003: Multiple Account Lockouts - Brute Force Pattern",
+      "mitre": "T1110", "severity": 7, "enabled": true,
+      "logic": "when the event QID is '4740: A user account was locked out' and when the count of the matched events is greater than 3 in 10 minutes grouping by sourceip",
+      "response": "Dispatch Offense, annotate with MITRE T1110"
+    },
+    {
+      "id": 4, "name": "MilliSec-004: Suspicious PowerShell Encoded Command",
+      "mitre": "T1027", "severity": 8, "enabled": true,
+      "logic": "when the event was detected by a Local/Remote collector and the event payload contains any of the following strings: '-enc', '-encodedcommand', '-w hidden', 'FromBase64String' and the process name is 'PowerShell.exe'",
+      "response": "Dispatch Offense, annotate with MITRE T1027"
+    },
+    {
+      "id": 5, "name": "MilliSec-005: Process Injection - CreateRemoteThread Detected",
+      "mitre": "T1055", "severity": 9, "enabled": true,
+      "logic": "when the event QID is 'Sysmon Event ID 8: CreateRemoteThread detected' and the source process is not in the Reference Set 'Approved_Admin_Tools'",
+      "response": "Dispatch CRITICAL Offense, annotate with MITRE T1055"
+    },
+    {
+      "id": 6, "name": "MilliSec-006: LSASS Memory Access - Credential Dumping",
+      "mitre": "T1003.001", "severity": 9, "enabled": true,
+      "logic": "when the event QID is 'Sysmon Event ID 10: ProcessAccess' and the target process is 'C:\\Windows\\system32\\lsass.exe' and the granted access is '0x1010' or '0x1410' or '0x1438' and the source process is not 'C:\\Windows\\system32\\wbem\\wmiprvse.exe'",
+      "response": "Dispatch CRITICAL Offense, annotate with MITRE T1003.001"
+    },
+    {
+      "id": 7, "name": "MilliSec-007: RDP Lateral Movement - Multi-Host Logins",
+      "mitre": "T1021.001", "severity": 7, "enabled": true,
+      "logic": "when the event QID is '4624: An account was successfully logged on' and the Logon Type is 10 (RemoteInteractive) and when the count of distinct destination IPs is greater than 2 grouping by username in 30 minutes",
+      "response": "Dispatch Offense, annotate with MITRE T1021.001"
+    },
+    {
+      "id": 8, "name": "MilliSec-008: Malicious DNS Request - Sinkhole Hit",
+      "mitre": "T1071.004", "severity": 8, "enabled": true,
+      "logic": "when a DNS event matches an entry in the Reference Set 'Threat_Intel_Domains' or when the DNS response IP equals '0.0.0.0' (sinkhole)",
+      "response": "Dispatch Offense, annotate with MITRE T1071.004"
+    },
+    {
+      "id": 9, "name": "MilliSec-009: Suspicious Service Installation",
+      "mitre": "T1543.003", "severity": 8, "enabled": true,
+      "logic": "when the event QID is '7045: A new service was installed in the system' and the service file name does not match any of the following patterns: 'C:\\Windows\\*', 'C:\\Program Files\\*'",
+      "response": "Dispatch Offense, annotate with MITRE T1543.003"
+    },
+    {
+      "id": 10, "name": "MilliSec-010: Malicious Email Attachment Quarantined",
+      "mitre": "T1566.001", "severity": 7, "enabled": true,
+      "logic": "when the log source type is 'Mail Gateway' and the event payload contains 'Blocked INFECTED' or 'Blocked BANNED' and the attachment extension is one of: '.exe', '.scr', '.vbs', '.js', '.docm'",
+      "response": "Dispatch Offense, annotate with MITRE T1566.001"
+    }
+  ]
+}
